@@ -1,8 +1,8 @@
 import bindAll from 'lodash.bindall';
 import PropTypes from 'prop-types';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import VM from 'scratch-vm';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import ControlsComponent from '../components/controls/controls.jsx';
 
 class Controls extends React.Component {
@@ -25,83 +25,45 @@ class Controls extends React.Component {
             this.props.vm.greenFlag();
         }
     }
-    handleStopAllClick(e) {
+    handleStopAllClick (e) {
         e.preventDefault();
         this.props.vm.stopAll();
     }
+    handleDebugCamera (isOn) {
+        if (isOn) {
+            const channel = new BroadcastChannel('webcam');
+            const video = document.createElement('video');
+            video.autoplay = true;
+            document.body.appendChild(video);
+
+            navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+                video.srcObject = stream;
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                setInterval(() => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    ctx.drawImage(video, 0, 0);
+                    canvas.toBlob(blob => {
+                        if (blob) {
+                            blob.arrayBuffer().then(buffer => {
+                                channel.postMessage(buffer);
+                            });
+                        }
+                    }, 'image/jpeg', 0.5); // Adjust quality for bandwidth
+                }, 100); // Send every 100ms (~10fps)
+            });
+        } else {
+            console.log('Debug camera is off');
+        }
+    }
+
     handleArImporterClick(e) {
         e.preventDefault();
         console.log('AR Importer clicked');
-
-        // Create a new Web Worker
-        const worker = new Worker(new URL('webWorker.js', import.meta.url));
-
-        // Open a new browser tab
-        const newTab = window.open();
-        let reader; // Declare reader outside the scope of .then
-        let stream;
-
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(videoStream => {
-                stream = videoStream;
-
-                // Get the video stream's track
-                const track = stream.getVideoTracks()[0];
-
-                // Create a MediaStreamTrackProcessor to get frames from the video track
-                const processor = new MediaStreamTrackProcessor({ track });
-                reader = processor.readable.getReader();
-
-                // Function to read frames and send them to the worker
-                const sendFrame = () => {
-                    reader.read().then(({ done, value }) => {
-                        if (done) {
-                            console.log('Stream ended');
-                            return;
-                        }
-
-                        // Use createImageBitmap to convert the VideoFrame to an ImageBitmap
-                        createImageBitmap(value).then(imageBitmap => {
-                            // Send the ImageBitmap to the worker
-                            worker.postMessage({ type: 'streamFrame', frame: imageBitmap }, [imageBitmap]);
-                            sendFrame(); // Send the next frame
-                        }).catch(error => {
-                            console.error('Error creating ImageBitmap:', error);
-                        });
-
-                        // Close the VideoFrame to release resources
-                        value.close();
-                    }).catch(error => {
-                        console.error('Error reading frame:', error);
-                    });
-                };
-
-                sendFrame(); // Start sending frames
-
-                // Display a message in the new tab
-                newTab.document.body.innerText = 'Streaming webcam using Web Worker...';
-
-                // Listen for messages from the worker
-                worker.onmessage = (event) => {
-                    console.log('Message from Web Worker:', event.data);
-                };
-            })
-            .catch(error => {
-                console.error('Error accessing camera:', error);
-                // Optionally, display an error message in the new tab
-                newTab.document.body.innerText = 'Error accessing camera: ' + error;
-            });
-
-        // Clean up resources when the tab is closed
-        newTab.onbeforeunload = () => {
-            if (reader) {
-                reader.cancel();
-            }
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-            worker.terminate(); // Terminate the worker when the tab is closed
-        };
+        this.handleDebugCamera(false); // Call the debug camera function
+        // This is where I will import a yolo model that is trained on scratch blocks
     }
     render() {
         const {

@@ -6,6 +6,7 @@ import {defineMessages, injectIntl, intlShape} from 'react-intl';
 import GreenFlag from '../green-flag/green-flag.jsx';
 import StopAll from '../stop-all/stop-all.jsx';
 import TurboMode from '../turbo-mode/turbo-mode.jsx';
+import ArImporter from '../arImporter/arImporter.jsx';
 
 import styles from './controls.css';
 
@@ -19,6 +20,11 @@ const messages = defineMessages({
         id: 'gui.controls.stop',
         defaultMessage: 'Stop',
         description: 'Stop button title'
+    },
+    arImportBlocks: {
+        id: 'gui.controls.arImportBlocks',
+        defaultMessage: 'Import AR Blocks',
+        description: 'Button to import AR blocks'
     }
 });
 
@@ -30,6 +36,7 @@ const Controls = function (props) {
         onGreenFlagClick,
         onStopAllClick,
         turbo,
+        onClickArImporter,
         ...componentProps
     } = props;
     return (
@@ -47,6 +54,12 @@ const Controls = function (props) {
                 title={intl.formatMessage(messages.stopTitle)}
                 onClick={onStopAllClick}
             />
+
+            <ArImporter
+                className={styles.arImporter}
+                title={intl.formatMessage(messages.arImportBlocks)}
+                onClick={onClickArImporter}
+            />
             {turbo ? (
                 <TurboMode />
             ) : null}
@@ -60,7 +73,8 @@ Controls.propTypes = {
     intl: intlShape.isRequired,
     onGreenFlagClick: PropTypes.func.isRequired,
     onStopAllClick: PropTypes.func.isRequired,
-    turbo: PropTypes.bool
+    turbo: PropTypes.bool,
+    onClickArImporter: PropTypes.func
 };
 
 Controls.defaultProps = {

@@ -23,7 +23,7 @@ const messages = defineMessages({
     },
     arImportBlocks: {
         id: 'gui.controls.arImportBlocks',
-        defaultMessage: 'Import AR Blocks',
+        defaultMessage: 'Toggle AR Blocks',
         description: 'Button to import AR blocks'
     }
 });

@@ -29,6 +29,10 @@ class Controls extends React.Component {
         e.preventDefault();
         this.props.vm.stopAll();
     }
+    handleArImporterClick (e) {
+        e.preventDefault();
+        console.log('AR Importer clicked');
+    }
     render () {
         const {
             vm, // eslint-disable-line no-unused-vars
@@ -44,6 +48,7 @@ class Controls extends React.Component {
                 turbo={turbo}
                 onGreenFlagClick={this.handleGreenFlagClick}
                 onStopAllClick={this.handleStopAllClick}
+                onClickArImporter={this.handleArImporterClick}
             />
         );
     }

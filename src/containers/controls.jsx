@@ -6,14 +6,24 @@ import {connect} from 'react-redux';
 import ControlsComponent from '../components/controls/controls.jsx';
 
 class Controls extends React.Component {
-    constructor(props) {
+    constructor (props) {
         super(props);
         bindAll(this, [
             'handleGreenFlagClick',
             'handleStopAllClick',
-            'handleArImporterClick' // Add this to bind the method
+            'handleArImporterClick'
         ]);
+        this.state = {
+            isArImporterEnabled: false
+        };
     }
+
+    toggleArImporter() {
+        this.setState(prevState => ({
+            isArImporterEnabled: !prevState.isArImporterEnabled
+        }));
+    }
+  
     handleGreenFlagClick(e) {
         e.preventDefault();
         if (e.shiftKey) {
@@ -56,16 +66,29 @@ class Controls extends React.Component {
             });
         } else {
             console.log('Debug camera is off');
+            if (this.cameraStream) {
+                // Stop all tracks of the media stream
+                this.cameraStream.getTracks().forEach(track => track.stop());
+                this.cameraStream = null;
+            }
+    
+            // Remove the video element from the DOM
+            const video = document.querySelector('video');
+            if (video) {
+                video.remove();
+            }
         }
     }
 
-    handleArImporterClick(e) {
+    handleArImporterClick (e) {
         e.preventDefault();
-        console.log('AR Importer clicked');
-        this.handleDebugCamera(false); // Call the debug camera function
+        console.log('AR Importer clicked', this.state.isArImporterEnabled);
+        this.handleDebugCamera(this.state.isArImporterEnabled); // Call the debug camera function
         // This is where I will import a yolo model that is trained on scratch blocks
+
+        this.toggleArImporter.bind(this)(); // Toggle the AR importer state
     }
-    render() {
+    render () {
         const {
             vm, // eslint-disable-line no-unused-vars
             isStarted, // eslint-disable-line no-unused-vars

@@ -16,6 +16,8 @@ class Controls extends React.Component {
         this.state = {
             isArImporterEnabled: false
         };
+        this.videoElement = null; // Add this line
+        this.cameraStream = null;
     }
 
     toggleArImporter() {
@@ -45,9 +47,11 @@ class Controls extends React.Component {
             const video = document.createElement('video');
             video.autoplay = true;
             document.body.appendChild(video);
+            this.videoElement = video; // Store the video element
 
             navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
                 video.srcObject = stream;
+                this.cameraStream = stream;
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
 
@@ -71,11 +75,11 @@ class Controls extends React.Component {
                 this.cameraStream.getTracks().forEach(track => track.stop());
                 this.cameraStream = null;
             }
-    
+
             // Remove the video element from the DOM
-            const video = document.querySelector('video');
-            if (video) {
-                video.remove();
+            if (this.videoElement) {
+                this.videoElement.remove();
+                this.videoElement = null;
             }
         }
     }

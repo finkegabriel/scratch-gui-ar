@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@microbit/microbit-universal-hex": "^0.2.2",
+    "@tensorflow/tfjs": "^4.22.0",
     "arraybuffer-loader": "^1.0.6",
     "autoprefixer": "^9.0.1",
     "balance-text": "^3.3.1",

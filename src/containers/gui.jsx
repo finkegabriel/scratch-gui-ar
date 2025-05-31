@@ -41,6 +41,7 @@ import systemPreferencesHOC from '../lib/system-preferences-hoc.jsx';
 
 import GUIComponent from '../components/gui/gui.jsx';
 import {setIsScratchDesktop} from '../lib/isScratchDesktop.js';
+import {BlockDetector} from '../lib/block-detector.js';
 
 const {RequestMetadata, setMetadata, unsetMetadata} = storage.scratchFetch;
 
@@ -55,12 +56,84 @@ const setProjectIdMetadata = projectId => {
 };
 
 class GUI extends React.Component {
+    constructor (props) {
+        super(props);
+        this.blockDetector = new BlockDetector();
+        this.state = {
+            detectedBlocks: [],
+            isDetecting: false
+        };
+    }
     componentDidMount () {
         setIsScratchDesktop(this.props.isScratchDesktop);
         this.props.onStorageInit(storage);
         this.props.onVmInit(this.props.vm);
         setProjectIdMetadata(this.props.projectId);
     }
+
+    processFrame = async (videoElement) => {
+        if (!this.state.isDetecting) return;
+
+        const detectedBlocks = await this.blockDetector.detectBlocks(videoElement);
+        this.setState({ detectedBlocks });
+
+        // Match detected blocks with Scratch blocks
+        this.matchDetectedBlocks(detectedBlocks);
+
+        // Request next frame
+        requestAnimationFrame(() => this.processFrame(videoElement));
+    }
+
+    matchDetectedBlocks(detections) {
+        const {vm} = this.props;
+        
+        detections.forEach(detection => {
+            // Find matching Scratch block type based on detection
+            const blockType = this.mapDetectionToBlockType(detection);
+            
+            if (blockType) {
+                // Create block in Scratch VM
+                vm.workspace.createBlock({
+                    type: blockType,
+                    x: detection.x,
+                    y: detection.y
+                });
+            }
+        });
+    }
+
+    mapDetectionToBlockType(detection) {
+        // Map YOLO detection class to Scratch block type
+        // This mapping will depend on your YOLO model's classes
+        const blockTypeMap = {
+            'motion_move': 'motion_movesteps',
+            'control_repeat': 'control_repeat',
+            // ... add more mappings
+        };
+        
+        return blockTypeMap[detection.class];
+    }
+
+    startBlockDetection = (videoElement) => {
+        this.setState({ isDetecting: true }, () => {
+            this.processFrame(videoElement);
+        });
+    }
+    
+    stopBlockDetection = () => {
+        this.setState({ isDetecting: false });
+    }
+    
+    // In your camera setup code:
+    handleCameraStream = (stream) => {
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.onloadedmetadata = () => {
+            video.play();
+            this.startBlockDetection(video);
+        };
+    }
+
     componentDidUpdate (prevProps) {
         if (this.props.projectId !== prevProps.projectId) {
             if (this.props.projectId !== null) {

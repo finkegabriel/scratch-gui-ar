@@ -10,6 +10,9 @@ import tabStyles from 'react-tabs/style/react-tabs.css';
 import VM from 'scratch-vm';
 import Renderer from 'scratch-render';
 
+//import ar block importer/detector
+import {BlockDetector} from '../../lib/block-detector';
+
 import Blocks from '../../containers/blocks.jsx';
 import CostumeTab from '../../containers/costume-tab.jsx';
 import TargetPane from '../../containers/target-pane.jsx';
@@ -53,7 +56,6 @@ const messages = defineMessages({
 // Cache this value to only retrieve it once the first time.
 // Assume that it doesn't change for a session.
 let isRendererSupported = null;
-
 const GUIComponent = props => {
     const {
         accountNavOpen,

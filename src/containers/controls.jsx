@@ -86,7 +86,7 @@ class Controls extends React.Component {
 
     handleArImporterClick (e) {
         // e.preventDefault();
-        console.log('AR Importer clicked', this.state.isArImporterEnabled);
+        console.log('AR Importer clicked', !this.state.isArImporterEnabled);
         this.handleDebugCamera(!this.state.isArImporterEnabled); // Call the debug camera function
         // This is where I will import a yolo model that is trained on scratch blocks
 
